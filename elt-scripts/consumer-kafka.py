@@ -47,6 +47,7 @@ def create_table_if_not_exists():
     if not table_exists(conn, 'sales_data'):
         create_table_query = """
         CREATE TABLE sales_data (
+            id INTEGER NOT NULL,
             ORDERNUMBER INTEGER NOT NULL,
             QUANTITYORDERED INTEGER NOT NULL,
             PRICEEACH DECIMAL(10, 2) NOT NULL,
@@ -69,7 +70,7 @@ def create_table_if_not_exists():
             TERRITORY VARCHAR(50),
             CONTACTLASTNAME VARCHAR(50),
             DEALSIZE VARCHAR(50),
-            PRIMARY KEY (ORDERNUMBER, ORDERLINENUMBER)
+            PRIMARY KEY (id)
         );
         """
         cursor = conn.cursor()
@@ -84,15 +85,16 @@ def insert_into_db(data):
 
     insert_query = """
     INSERT INTO sales_data (
-        ORDERNUMBER, QUANTITYORDERED, PRICEEACH, ORDERLINENUMBER, SALES,
+        id,ORDERNUMBER, QUANTITYORDERED, PRICEEACH, ORDERLINENUMBER, SALES,
         ORDERDATE, STATUS, QTR_ID, MONTH_ID, YEAR_ID, PRODUCTLINE,
         CUSTOMERNAME, PHONE, ADDRESSLINE1, ADDRESSLINE2, CITY, STATE,
         POSTALCODE, COUNTRY, TERRITORY, CONTACTLASTNAME, DEALSIZE
-    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s)
     """
 
     # Assurez-vous que toutes les valeurs sont présentes et formatées correctement
     values = (
+        data.get('id'),
         data.get('ORDERNUMBER'),
         data.get('QUANTITYORDERED'),
         data.get('PRICEEACH'),
@@ -145,6 +147,16 @@ def main():
         print("Arrêt du consommateur.")
     finally:
         consumer.close()
+        conn = psycopg2.connect(**db_config)
+        cursor = conn.cursor()
+        create_table_query = """
+            DROP TABLE sales_data;
+        """
+        cursor.execute(create_table_query)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        print("table are droped")
 
 if __name__ == '__main__':
     create_table_if_not_exists()

@@ -14,11 +14,11 @@ def lire_et_traiter_csv(fichier_csv):
     df = df[(df['TERRITORY'].notna()) & (df['ADDRESSLINE2'].notna()) & (df["POSTALCODE"].notna()) & (df["STATE"].notna())]
     df = df[df['QUANTITYORDERED'] > 30]
     df = df.drop(['CONTACTFIRSTNAME', 'MSRP', 'PRODUCTCODE'], axis=1)
+    df['id'] = range(1, len(df) + 1)
     return df
 
 def produire_message_kafka(topic, df):
     for index, row in df.iterrows():
-        # Convertir chaque ligne en dictionnaire puis en JSON
         message = row.to_dict()
         json_data = json.dumps(message)
         producer.produce(topic, value=json_data)
