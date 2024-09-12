@@ -11,15 +11,22 @@ producer = Producer(producer_conf)
 
 def lire_et_traiter_csv(fichier_csv):
     df = pd.read_csv(fichier_csv,encoding='ISO-8859-1')
-    df = df[(df['TERRITORY'].notna()) & (df['ADDRESSLINE2'].notna()) & (df["POSTALCODE"].notna())]
+    df = df[(df['TERRITORY'].notna()) & (df['ADDRESSLINE2'].notna()) & (df["POSTALCODE"].notna()) & (df["STATE"].notna())]
     df = df[df['QUANTITYORDERED'] > 30]
-    print(df["ADDRESSLINE2"])
+    df = df.drop(['CONTACTFIRSTNAME', 'MSRP', 'PRODUCTCODE'], axis=1)
     return df
 
-def produire_message_kafka(topic, data):
+def produire_message_kafka(topic, df):
+    for index, row in df.iterrows():
+        # Convertir chaque ligne en dictionnaire puis en JSON
+        message = row.to_dict()
+        json_data = json.dumps(message)
+        producer.produce(topic, value=json_data)
+        producer.flush()
 
-    producer.produce(topic, value=json.dumps(data))
-    producer.flush()
+def main():
+    df=lire_et_traiter_csv('source-data/sales_data_sample.csv')
+    produire_message_kafka("sale_data",df)
 
-
-lire_et_traiter_csv('source-data/sales_data_sample.csv')
+if __name__ == '__main__':
+    main()
