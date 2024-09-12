@@ -8,7 +8,7 @@ from datetime import datetime
 consumer_conf = {
     'bootstrap.servers': 'localhost:9092',  # Adresse du serveur Kafka
     'group.id': 'mon_groupe_consommateur',   # ID du groupe de consommateurs
-    'auto.offset.reset': 'earliest',         # Commencer à lire depuis le début des logs
+    'auto.offset.reset': 'latest',         # Commencer à lire depuis le début des logs
     'enable.auto.commit': True               # Commit automatique des offsets
 }
 
@@ -147,16 +147,18 @@ def main():
         print("Arrêt du consommateur.")
     finally:
         consumer.close()
+        """
         conn = psycopg2.connect(**db_config)
         cursor = conn.cursor()
         create_table_query = """
-            DROP TABLE sales_data;
+
         """
         cursor.execute(create_table_query)
         conn.commit()
         cursor.close()
         conn.close()
         print("table are droped")
+        """
 
 if __name__ == '__main__':
     create_table_if_not_exists()
